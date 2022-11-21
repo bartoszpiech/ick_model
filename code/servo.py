@@ -42,7 +42,7 @@ class Servo:
 
     def set_angle(self, angle: int):
         self.angle = angle
-        self.duty = np.interp(self.angle, [self.min_angle, self.max_angle], [self.min_duty, self.max_duty])
+        self.duty = np.interp(self.angle, [self.min_angle, self.max_angle], [self.min_duty, self.max_duty]) # interpolates value self.angle between min and max duty cycle
         self.pwm.ChangeDutyCycle(self.duty)
 
     def stop(self):

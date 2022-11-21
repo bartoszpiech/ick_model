@@ -21,16 +21,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# imports
 from flask import Flask
-
 from servo import *
 
+# create flask app
 app = Flask(__name__)
+
+# to set servo0 to 90deg just send this api call \/
+#                                       localhost:5000/api/0/90
 
 @app.route('/api/<int:servo_id>/<int:angle>')
 def api_set_angle(servo_id: int, angle: int):
-    status = 'ok'
-    if servo_id > len(servos):
+    status = 'ok'               # normally ok
+    if servo_id > len(servos):  # error
         status = 'servo id not in our servo list'
     current_servo = servos[servo_id]
     current_servo.set_angle(angle)
@@ -41,6 +45,6 @@ pin = 21
 freq = 50
 s = Servo(pin, freq)
 
-# add s to servo dict with id 0
+# add s to servo list with id 0
 servos = []
 servos.append(s)
