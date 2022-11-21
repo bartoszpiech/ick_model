@@ -22,28 +22,29 @@
 # SOFTWARE.
 
 import RPi.GPIO as GPIO
+import numpy as np
 import time
 
-# connected pwm servo pin
-pin = 21
+class Servo:
+    def __init__(self, pin: int, freq: int):
+        self.pin = pin
+        self.freq = freq    # frequency
+        self.duty = 0       # duty cycle
+        self.min_duty = 1.44
+        self.max_duty = 12.63   # TODO: angle reaches > 180deg, lower max duty cycle or smth
+        self.angle = 0      # angle in degrees
+        self.min_angle = 0
+        self.max_angle = 180
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(pin, GPIO.OUT)
+        self.pwm = GPIO.PWM(self.pin, self.freq)
+        self.pwm.start(self.duty)
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(pin, GPIO.OUT)
+    def set_angle(self, angle: int):
+        self.angle = angle
+        self.duty = np.interp(self.angle, [self.min_angle, self.max_angle], [self.min_duty, self.max_duty])
+        self.pwm.ChangeDutyCycle(self.duty)
 
-serwo = GPIO.PWM(pin, 50)   # 50Hz PWM frequency
-wypelnienie_serwo = 0       # starting position
-serwo.start(wypelnienie_serwo)
-
-try:
-    while True:
-        print(f'wypelnienie: {wypelnienie_serwo}')
-        wypelnienie_serwo += 0.1
-        if wypelnienie_serwo > 13:  # tested experimentally when servo reaches it's limits
-            wypelnienie_serwo = 0   # reset
-        serwo.ChangeDutyCycle(wypelnienie_serwo)
-        time.sleep(0.05)            # time delay
-except KeyboardInterrupt:
-    print('Koniec')
-
-serwo.stop()
-GPIO.cleanup()
+    def stop(self):
+        self.pwm.stop()
+        GPIO.cleanup()
