@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # Copyright (c) 2022 Bartosz Piech, Politechnika Wrocławska / Wrocław
 # University of Science and Technology
 # 
@@ -21,27 +19,36 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from flask import Flask
+from flask import Flask, request, jsonify
+import atexit
 
 from servo import *
 
 app = Flask(__name__)
-
-@app.route('/api/<int:servo_id>/<int:angle>')
-def api_set_angle(servo_id: int, angle: int):
-    status = 'ok'
-    if servo_id > len(servos):
-        status = 'servo id not in our servo list'
-    current_servo = servos[servo_id]
-    current_servo.set_angle(angle)
-    return {'status': status}
-
-freq = 50
-
 # servo settings
-pins = [21, 20, 16, 12, 1, 7]
-servos = []
+freq = 50
+pins = [('driverSeatTilt', 21), ('passengerSeatTilt', 20), ('driverMirrorTiltX', 16), ('driverMirrorTiltY', 12), ('passengerMirrorTiltX', 7), ('passengerMirrorTiltY', 8)]
+servos = {}
+
+def stop_servos():
+    for s in servos:
+        print(f'stopping servo {s}')
+        servos[s].stop()
+
+@app.route('/api/', methods=['POST'])
+def api_set_angle():
+    status = 'ok'
+    content = request.json
+    for c in content:
+        if c not in servos:
+            status = 'servo id not in servo list'
+            break
+        servos[c].set_angle(content[c])
+    return jsonify({'status': status})
+
 for pin in pins:
-    servos.append(Servo(pin, freq))
+    servos[pin[0]] = Servo(pin[1], freq)
 
 print(f'servos loaded: {len(servos)}')
+
+atexit.register(stop_servos)

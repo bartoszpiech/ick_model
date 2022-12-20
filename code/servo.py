@@ -22,6 +22,7 @@
 # SOFTWARE.
 
 import RPi.GPIO as GPIO
+import pigpio
 import numpy as np
 import time
 
@@ -29,24 +30,22 @@ class Servo:
     def __init__(self, pin: int, freq: int):
         self.pin = pin
         self.freq = freq    # frequency
-        self.duty = 0       # duty cycle
-        self.min_duty = 1.44
-        self.max_duty = 12.63   # TODO: angle reaches > 180deg, lower max duty cycle or smth
+        self.pw = 0
+        self.min_pw = 500
+        self.max_pw = 2500  # TODO: angle reaches > 180deg, lower max duty cycle or smth
         self.angle = 0      # angle in degrees
         self.min_angle = 0
         self.max_angle = 180
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(pin, GPIO.OUT)
-        self.pwm = GPIO.PWM(self.pin, self.freq)
-        self.pwm.start(self.duty)
+        self.pwm = pigpio.pi()
+        self.pwm.set_mode(pin, pigpio.OUTPUT)
+        self.pwm.set_PWM_frequency(pin, freq)
 
     def set_angle(self, angle: int):
         self.angle = angle
-        self.duty = np.interp(self.angle, [self.min_angle, self.max_angle], [self.min_duty, self.max_duty])
-        self.pwm.ChangeDutyCycle(self.duty)
-        time.sleep(1)
-        self.pwm.ChangeDutyCycle(0)
+        self.pw = np.interp(self.angle, [self.min_angle, self.max_angle], [self.min_pw, self.max_pw])
+        self.pwm.set_servo_pulsewidth(self.pin, self.pw)
+        #time.sleep(3)
 
     def stop(self):
-        self.pwm.stop()
-        GPIO.cleanup()
+        self.pwm.set_PWM_dutycycle(self.pin, 0)
+        self.pwm.set_PWM_frequency(self.pin, 0)
