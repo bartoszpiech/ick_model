@@ -44,6 +44,8 @@ class Servo:
         self.angle = angle
         self.duty = np.interp(self.angle, [self.min_angle, self.max_angle], [self.min_duty, self.max_duty])
         self.pwm.ChangeDutyCycle(self.duty)
+        time.sleep(1)
+        self.pwm.ChangeDutyCycle(0)
 
     def stop(self):
         self.pwm.stop()

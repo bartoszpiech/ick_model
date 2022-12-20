@@ -36,11 +36,12 @@ def api_set_angle(servo_id: int, angle: int):
     current_servo.set_angle(angle)
     return {'status': status}
 
-# servo settings
-pin = 21
 freq = 50
-s = Servo(pin, freq)
 
-# add s to servo dict with id 0
+# servo settings
+pins = [21, 20, 16, 12, 1, 7]
 servos = []
-servos.append(s)
+for pin in pins:
+    servos.append(Servo(pin, freq))
+
+print(f'servos loaded: {len(servos)}')
