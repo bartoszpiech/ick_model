@@ -42,9 +42,8 @@ class Servo:
 
     def set_angle(self, angle: int):
         self.angle = angle
-        self.pw = np.interp(self.angle, [self.min_angle, self.max_angle], [self.min_pw, self.max_pw])
+        self.pw = np.interp(self.angle, [self.min_angle, self.max_angle], [self.max_pw, self.min_pw])
         self.pwm.set_servo_pulsewidth(self.pin, self.pw)
-        #time.sleep(3)
 
     def stop(self):
         self.pwm.set_PWM_dutycycle(self.pin, 0)
